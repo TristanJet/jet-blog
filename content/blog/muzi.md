@@ -15,10 +15,8 @@ Playback and library management is handled entirely by the open-source applicati
 
 
 Post sections: 
-```=html
-<a href="#notable">- Notable Solutions</a>
-<a href="#lessons">- Lessons Learned</a>
-```
+<p><a href="#notable">- Notable Solutions</a></p>
+<p><a href="#lessons">- Lessons Learned</a></p>
 
 ##### Tech Stack
 
@@ -31,10 +29,8 @@ Muzi was my first project with Zig and also my first project lower level in soft
 A massive help early on was a blog post by Leon Plickat titled: [Uncooked Terminal IO](https://leon_plickat.srht.site/writing/uncooked-terminal-io/article.html). It is effectively an extremely well-detailed, well-written tutorial on creating a TUI without a library, in Zig, for POSIX-compliant systems. I am immensely grateful to Plickat for his blog post since I referred to it probably a dozen times during the development of muzi. I would recommend anyone interested in programming a TUI to read through Plickat's post in full. 
 *side note*: despite being shown how, I still haven't implemented Kitty Input Protocol or runtime terminal window resize handling in muzi.
 
-
-```=html
 <h3 id="notable">Notable Solutions</h3>
-```
+
 #### Logging
 
 Because the TUI fills the entire terminal screen, I needed to log to another terminal. Zig's [comptime](https://ziglang.org/documentation/master/#comptime) features came in clutch here. 
@@ -87,9 +83,7 @@ Does this sound overengineered? You'd be correct, it is. It introduced a plethor
 
 Lesson learned: **Keep it simple, stupid.**
 
-```=html
 <h3 id="lessons">Lessons learned</h3>
-```
 
 ##### Prior to coding
 understand the **bottom** level APIs you have access to! Nearing the end of muzi's development, I watched the talk [Making Systems Programming Accessible](https://www.youtube.com/watch?v=Qncdi-Fg0-I&t=585s) by Andrew Kelley (Zig creator). If only I had watched it sooner! Andrew's answer to the question: "what is systems programming?", is that it's a way of modelling problems. I'm rewording it a little but here is the point:
@@ -118,8 +112,8 @@ while (!app.state.quit) {
 
 	//render and reset ...
 }
-
 ```
+
 Most functionality is driven by **two** events: terminal input, and idle response from MPD. The release event depends on the input event and the time bar on the currently playing song moves regardless, that's it, everything else is driven by input, and MPD. The bottom-level APIs are 2 non-blocking file descriptors.
 
 Nevertheless, I am happy to have understood this idea sooner rather than later and I am even further convinced that Zig's creator knows exactly what he is doing.

@@ -41,6 +41,7 @@ const DEFAULT_LAYOUT = "post.html";
 const INDEX_LAYOUT = "index.html";
 const BLOG_LAYOUT = "blog.html";
 const CONTACT_LAYOUT = "contact.html";
+const DRAFT_LAYOUT = "draft.html";
 
 const TOKEN_RE = /\{\{\s*([a-zA-Z0-9_-]+)\s*\}\}/g;
 
@@ -248,9 +249,11 @@ async function build(): Promise<void> {
   const blogLayout = await loadLayout(BLOG_LAYOUT);
   const contactLayout = await loadLayout(CONTACT_LAYOUT);
   const defaultPostLayout = await loadLayout(DEFAULT_LAYOUT);
+  const draftLayout = await loadLayout(DRAFT_LAYOUT);
 
   const homeMarkdown = await loadMarkdown(join(CONTENT_DIR, "index.md"));
   const blogMarkdown = await loadMarkdown(join(CONTENT_DIR, "blog", "index.md"));
+  const draftMarkdown = await loadMarkdown(join(CONTENT_DIR, "draft", "index.md"));
 
   const blogDirPath = join(CONTENT_DIR, "blog");
   let markdownFiles: string[] = [];
@@ -282,6 +285,8 @@ async function build(): Promise<void> {
       slug,
       content: contentHtml,
       "site-title": SITE_TITLE,
+      "back-link": "/blog",
+      "back-text": "Back to all posts",
     });
 
     const pageHtml = fillTemplate(baseLayout, {
@@ -304,6 +309,61 @@ async function build(): Promise<void> {
   }
 
   posts.sort(sortByDateDesc);
+
+  const draftDirPath = join(CONTENT_DIR, "draft");
+  let draftFiles: string[] = [];
+  try {
+    const entries = await readdir(draftDirPath, { withFileTypes: true });
+    draftFiles = entries
+      .filter((entry) => entry.isFile() && entry.name.endsWith(".md") && entry.name !== "index.md")
+      .map((entry) => join(draftDirPath, entry.name));
+  } catch {
+    draftFiles = [];
+  }
+
+  const drafts: Post[] = [];
+
+  for (const filePath of draftFiles) {
+    const { frontmatter, contentHtml } = await loadMarkdown(filePath);
+    const slug = slugFromFilename(filePath);
+    const title = frontmatter.title?.trim() || slug.replace(/-/g, " ");
+    const date = frontmatter.date?.trim() || "";
+    const summary = frontmatter.summary?.trim() || "";
+    const tags = parseTags(frontmatter.tags);
+    const layoutName = frontmatter.layout?.trim() || DEFAULT_LAYOUT;
+
+    const postLayout = layoutName === DEFAULT_LAYOUT ? defaultPostLayout : await loadLayout(layoutName);
+    const postPartial = fillTemplate(postLayout, {
+      title,
+      date: formatDate(date),
+      summary,
+      slug,
+      content: contentHtml,
+      "site-title": SITE_TITLE,
+      "back-link": "/draft",
+      "back-text": "Back to all drafts",
+    });
+
+    const pageHtml = fillTemplate(baseLayout, {
+      "site-title": SITE_TITLE,
+      page: postPartial,
+    });
+
+    const postDir = join(DIST_DIR, "draft", slug);
+    await ensureDir(postDir);
+    await Bun.write(join(postDir, "index.html"), pageHtml);
+
+    drafts.push({
+      title,
+      date,
+      summary,
+      slug,
+      tags,
+      layout: layoutName,
+    });
+  }
+
+  drafts.sort(sortByDateDesc);
 
   const blogBlocks = extractBlocks(blogLayout, [
     {
@@ -339,6 +399,41 @@ async function build(): Promise<void> {
   const blogDir = join(DIST_DIR, "blog");
   await ensureDir(blogDir);
   await Bun.write(join(blogDir, "index.html"), blogPage);
+
+  const draftBlocks = extractBlocks(draftLayout, [
+    {
+      name: "blog-items",
+      startMarker: "<!-- BLOG_ITEM -->",
+      endMarker: "<!-- /BLOG_ITEM -->",
+    },
+  ]);
+
+  const draftItemTemplate = requireBlockTemplate(draftBlocks, "blog-items");
+  const draftListHtml = drafts
+    .map((post) => {
+      return fillTemplate(draftItemTemplate, {
+        title: post.title,
+        date: formatDate(post.date),
+        summary: post.summary,
+        slug: encodeURIComponent(post.slug),
+      });
+    })
+    .join("\n");
+
+  const draftPartial = fillTemplate(draftBlocks.pageTemplate, {
+    "blog-items": draftListHtml,
+    content: draftMarkdown.contentHtml,
+    "site-title": SITE_TITLE,
+  });
+
+  const draftPage = fillTemplate(baseLayout, {
+    "site-title": SITE_TITLE,
+    page: draftPartial,
+  });
+
+  const draftDir = join(DIST_DIR, "draft");
+  await ensureDir(draftDir);
+  await Bun.write(join(draftDir, "index.html"), draftPage);
 
   const contactPartial = fillTemplate(contactLayout, {
     "site-title": SITE_TITLE,
@@ -407,7 +502,7 @@ async function build(): Promise<void> {
 
   await Bun.write(join(DIST_DIR, "index.html"), indexPage);
 
-  console.log(`Built ${posts.length} post(s) to ${DIST_DIR}/`);
+  console.log(`Built ${posts.length} post(s) and ${drafts.length} draft(s) to ${DIST_DIR}/`);
 }
 
 function resolvePathFromUrl(url: URL): string {
