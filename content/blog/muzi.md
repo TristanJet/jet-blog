@@ -1,6 +1,6 @@
 ---
 title: Muzi - A terminal interface to an mp3 library
-date: 2026-02-21
+date: 2026-01-21
 layout: post.html
 tags: projects
 ---

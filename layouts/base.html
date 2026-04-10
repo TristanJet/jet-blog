@@ -2,7 +2,7 @@
 <html lang="en">
   <head id="head">
     <meta charset="utf-8">
-    <meta name="viewport" content="initial-scale=1">
+    <meta name="viewport" content="initial-scale=1 width=device-width ">
     <title>{{site-title}}</title>
     <link type="text/css" rel="stylesheet" href="/style.css">
     <link type="text/css" rel="stylesheet" href="/highlight.css">
@@ -14,26 +14,31 @@
   </head>
   <body id="body">
     <!-- <h1 class="site-title" :text="$site.title"></h1> -->
-    <div class="subtitle-items">
-      <nav>
-        <a class="nav-header" href="/">Home</a>
-         &nbsp; • &nbsp;
-        <a class="nav-header" href="/blog">Blog</a>
-         &nbsp; • &nbsp;
-        <a class="nav-header" href="/contact">Contact</a>
-      </nav>
-      <div class="social-links">
-        <a href="https://x.com/flyasajet" target="_blank" rel="noopener noreferrer" title="Visit my X profile" aria-label="Link to my X profile">
-        <img src="/x-logo.svg" class="icon" alt="X logo" width="16" height="16"></a>
-        &nbsp;
-        <a href="https://github.com/tristanjet" target="_blank" rel="noopener noreferrer" title="Visit my Github" aria-label="Link to my X profile">
-          <img src="/github-icon.svg" class="icon" alt="GH logo" width="16" height="16"></a>
-         &nbsp;
-        <a href="https://myanimelist.net/profile/FlyasTheJet" target="_blank" rel="noopener noreferrer" title="Visit my MyAnimeList" aria-label="Link to my X profile">MAL</a>
-         &nbsp;
-        <a href="https://www.youtube.com/@thejet4244" target="_blank" rel="noopener noreferrer" title="Visit my YouTube channel" aria-label="Link to my YouTube channel">Youtube</a>
-      </div>
-    </div>
+    <nav>
+      <ul class="site-nav">
+        <li><a class="nav-header" href="/">Home</a> &nbsp;</li>
+        <li><a class="nav-header" href="/blog">Blog</a> &nbsp;</li>
+        <li><a class="nav-header" href="/contact">Contact</a></li>
+      </ul>
+      <ul class="social-links">
+        <li>
+          <a href="https://x.com/flyasajet" target="_blank" rel="noopener noreferrer" title="Visit my X profile" aria-label="Link to my X profile">
+            <img src="/x-logo.svg" class="icon" alt="X logo" width="16" height="16"></a>
+        </li>
+        <li>
+          <a href="https://github.com/tristanjet" target="_blank" rel="noopener noreferrer" title="Visit my Github" aria-label="Link to my X profile">
+            <img src="/github-icon.svg" class="icon" alt="GH logo" width="16" height="16"></a>
+        </li>
+        <li>
+          <a href="https://myanimelist.net/profile/FlyasTheJet" target="_blank" rel="noopener noreferrer" title="Visit my MyAnimeList" aria-label="Link to my X profile">
+            <img src="/mal.svg" class="icon" alt="MAL logo" width="16" height="16"></a>
+        </li>
+        <li>
+          <a href="https://www.youtube.com/@flyasajet" target="_blank" rel="noopener noreferrer" title="Visit my YouTube channel" aria-label="Link to my YouTube channel">
+            <img src="/yt.svg" class="icon" alt="Yt logo" width="16" height="16"></a>
+        </li>
+      </ul>
+    </nav>
     {{page}}
   </body>
 </html>

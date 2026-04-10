@@ -1,0 +1,3 @@
+- it is no coincidence that the people of a culture of such morality should create the best standard of living in the world
+- sense of identity
+- naivete assuming the universality of morality

@@ -19,34 +19,52 @@ a {
 html {
   color: #ccc;
   font-family: "Georgia", serif;
-  font-size: 1.2em;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
   background-color: #1a1a1a;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 body {
-  margin-top: 60px;
+  margin: 60px auto 0;
   width: 100%;
-  max-width: 800px;
+  max-width: 700px;
   padding: 15px;
-  display: flex;
-  flex-direction: column;
+}
+
+.post-body p {
+  hyphens: auto;
+}
+
+.post-body code {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.post-body pre {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.post-body pre > code {
+  overflow-x: auto;
+  display: block;
+}
+
+.post-body a {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .home-body {
-  border: 1px solid;
   padding-left: 2ch;
   padding-right: 2ch;
-  border-color: #eee;
 }
 
-.profile {
-  margin-top: 1.6em;
-  display: flex;
-  align-items: stretch;
-  gap: 1.5rem;
+.post-body {
+  padding-left: 2ch;
+  padding-right: 2ch;
 }
 
 .sub-row {
@@ -57,20 +75,24 @@ body {
   font-size: 1em;
 }
 
+.sub-row > * {
+  min-width: 0;
+}
+
 .date {
   font-family: monospace;
   color: #A855F7;
 }
 
 .profile-picture {
-  width: 220px;
+  padding-top: 3em;
+  padding-top: 3em;
+  width: 100%;
   height: auto;
   object-fit: cover;
-  align-self: stretch;
-}
-
-.profile {
-  height: 100%;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .site-title {
@@ -81,18 +103,49 @@ body {
 }
 
 .subtitle-items {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: block;
+}
+
+.subtitle-items > * {
+  min-width: 0;
 }
 
 nav {
   color: #A855F7;
-  display: flex;
-  flex-direction: row;
-  justify-content: left;
   font-size: 1.2em;
   margin-bottom: 20px;
+}
+
+nav::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.site-nav {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  float: left;
+}
+
+.site-nav li {
+  display: inline;
+}
+
+.social-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  float: right;
+}
+
+.social-links li {
+  display: inline;
+}
+
+.social-links li + li {
+  margin-left: 0.6rem;
 }
 
 .nav-header {
@@ -122,6 +175,7 @@ h5 {
 #contact-box {
   padding-left: 1ch;
   border: 0.3ch;
+  min-width: 26ch;
   margin-right: 50%;
   border-style: dashed;
 }
@@ -138,7 +192,6 @@ h5 {
   display: block;
   margin: 1.5rem auto;
   width: 100%;
-  max-width: 800px;
 }
 
 #center {
@@ -168,6 +221,7 @@ footer {
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding-bottom: 5em;
 }
 
 footer hr {
