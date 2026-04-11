@@ -41,6 +41,7 @@ const DEFAULT_LAYOUT = "post.html";
 const INDEX_LAYOUT = "index.html";
 const BLOG_LAYOUT = "blog.html";
 const CONTACT_LAYOUT = "contact.html";
+const LIKES_LAYOUT = "likes.html";
 const DRAFT_LAYOUT = "draft.html";
 
 const TOKEN_RE = /\{\{\s*([a-zA-Z0-9_-]+)\s*\}\}/g;
@@ -250,10 +251,12 @@ async function build(): Promise<void> {
   const contactLayout = await loadLayout(CONTACT_LAYOUT);
   const defaultPostLayout = await loadLayout(DEFAULT_LAYOUT);
   const draftLayout = await loadLayout(DRAFT_LAYOUT);
+  const likesLayout = await loadLayout(LIKES_LAYOUT);
 
   const homeMarkdown = await loadMarkdown(join(CONTENT_DIR, "index.md"));
   const blogMarkdown = await loadMarkdown(join(CONTENT_DIR, "blog", "index.md"));
   const draftMarkdown = await loadMarkdown(join(CONTENT_DIR, "draft", "index.md"));
+  const likesMarkdown = await loadMarkdown(join(CONTENT_DIR, "likes", "index.md"));
 
   const blogDirPath = join(CONTENT_DIR, "blog");
   let markdownFiles: string[] = [];
@@ -447,6 +450,20 @@ async function build(): Promise<void> {
   const contactDir = join(DIST_DIR, "contact");
   await ensureDir(contactDir);
   await Bun.write(join(contactDir, "index.html"), contactPage);
+
+  const likesPartial = fillTemplate(likesLayout, {
+    content: likesMarkdown.contentHtml,
+    "site-title": SITE_TITLE,
+  });
+
+  const likesPage = fillTemplate(baseLayout, {
+    "site-title": SITE_TITLE,
+    page: likesPartial,
+  });
+
+  const likesDir = join(DIST_DIR, "likes");
+  await ensureDir(likesDir);
+  await Bun.write(join(likesDir, "index.html"), likesPage);
 
   const indexBlocks = extractBlocks(indexLayout, [
     {
