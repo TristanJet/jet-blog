@@ -1,5 +1,6 @@
 import { marked } from "marked";
-import { readdir } from "node:fs/promises";
+import type { Dirent } from "node:fs";
+import { lstat, readdir, realpath, stat } from "node:fs/promises";
 import { basename, extname, join } from "node:path";
 
 type Frontmatter = {
@@ -17,6 +18,12 @@ type Post = {
   slug: string;
   tags: string[];
   layout: string;
+};
+
+type SectionIndex = {
+  layoutName: string;
+  contentHtml: string;
+  frontmatter: Frontmatter;
 };
 
 const markdownRenderer = new marked.Renderer();
@@ -40,8 +47,6 @@ const BASE_LAYOUT = "base.html";
 const DEFAULT_LAYOUT = "post.html";
 const INDEX_LAYOUT = "index.html";
 const BLOG_LAYOUT = "blog.html";
-const CONTACT_LAYOUT = "contact.html";
-const LIKES_LAYOUT = "likes.html";
 const DRAFT_LAYOUT = "draft.html";
 
 const TOKEN_RE = /\{\{\s*([a-zA-Z0-9_-]+)\s*\}\}/g;
@@ -186,38 +191,63 @@ async function ensureDir(path: string): Promise<void> {
 }
 
 async function copyAssets(): Promise<void> {
-  let entries: string[] = [];
-  try {
-    entries = (await readdir(ASSETS_DIR, { withFileTypes: true }))
-      .filter((entry) => entry.isFile())
-      .map((entry) => entry.name);
-  } catch {
-    entries = [];
-  }
+  const seenDirs = new Set<string>();
 
-  for (const entry of entries) {
-    const file = Bun.file(join(ASSETS_DIR, entry));
-    await Bun.write(join(DIST_DIR, entry), file);
-  }
+  async function copyDir(srcDir: string, destDir: string): Promise<void> {
+    let entries: Dirent[] = [];
+    try {
+      entries = (await readdir(srcDir, { withFileTypes: true })) as Dirent[];
+    } catch {
+      return;
+    }
 
-  const mediaDir = join(ASSETS_DIR, "media");
-  let mediaEntries: string[] = [];
-  try {
-    mediaEntries = (await readdir(mediaDir, { withFileTypes: true }))
-      .filter((entry) => entry.isFile())
-      .map((entry) => entry.name);
-  } catch {
-    mediaEntries = [];
-  }
+    for (const entry of entries) {
+      const entryName = entry.name.toString();
+      const srcPath = join(srcDir, entryName);
+      const destPath = join(destDir, entryName);
 
-  if (mediaEntries.length > 0) {
-    const mediaOutDir = join(DIST_DIR, "media");
-    await ensureDir(mediaOutDir);
-    for (const entry of mediaEntries) {
-      const file = Bun.file(join(mediaDir, entry));
-      await Bun.write(join(mediaOutDir, entry), file);
+      if (entry.isDirectory()) {
+        await ensureDir(destPath);
+        await copyDir(srcPath, destPath);
+        continue;
+      }
+
+      if (entry.isSymbolicLink()) {
+        const targetPath = await realpath(srcPath);
+        const targetStats = await stat(targetPath);
+
+        if (targetStats.isDirectory()) {
+          if (seenDirs.has(targetPath)) {
+            continue;
+          }
+          seenDirs.add(targetPath);
+          await ensureDir(destPath);
+          await copyDir(targetPath, destPath);
+          continue;
+        }
+
+        if (targetStats.isFile()) {
+          const file = Bun.file(targetPath);
+          await Bun.write(destPath, file);
+        }
+        continue;
+      }
+
+      if (entry.isFile()) {
+        const file = Bun.file(srcPath);
+        await Bun.write(destPath, file);
+        continue;
+      }
+
+      const fallbackStats = await lstat(srcPath);
+      if (fallbackStats.isFile()) {
+        const file = Bun.file(srcPath);
+        await Bun.write(destPath, file);
+      }
     }
   }
+
+  await copyDir(ASSETS_DIR, DIST_DIR);
 }
 
 async function loadLayout(name: string): Promise<string> {
@@ -241,6 +271,38 @@ async function loadMarkdown(filePath: string): Promise<{ frontmatter: Frontmatte
   return { frontmatter, contentHtml };
 }
 
+async function loadSectionIndex(section: string): Promise<SectionIndex> {
+  const markdownPath = join(CONTENT_DIR, section, "index.md");
+  const { frontmatter, contentHtml } = await loadMarkdown(markdownPath);
+  const layoutName = frontmatter.layout?.trim() || DEFAULT_LAYOUT;
+  return { layoutName, contentHtml, frontmatter };
+}
+
+async function renderSectionIndex(
+  section: string,
+  sectionIndex: SectionIndex,
+  baseLayout: string,
+  defaultPostLayout: string,
+): Promise<void> {
+  const layoutName = sectionIndex.layoutName;
+  const sectionLayout = layoutName === DEFAULT_LAYOUT ? defaultPostLayout : await loadLayout(layoutName);
+  const sectionPartial = fillTemplate(sectionLayout, {
+    content: sectionIndex.contentHtml,
+    title: sectionIndex.frontmatter.title?.trim() ?? "",
+    date: formatDate(sectionIndex.frontmatter.date?.trim() ?? ""),
+    "site-title": SITE_TITLE,
+  });
+
+  const pageHtml = fillTemplate(baseLayout, {
+    "site-title": SITE_TITLE,
+    page: sectionPartial,
+  });
+
+  const sectionDir = join(DIST_DIR, section);
+  await ensureDir(sectionDir);
+  await Bun.write(join(sectionDir, "index.html"), pageHtml);
+}
+
 async function build(): Promise<void> {
   await ensureDir(DIST_DIR);
   await copyAssets();
@@ -248,15 +310,12 @@ async function build(): Promise<void> {
   const baseLayout = await loadLayout(BASE_LAYOUT);
   const indexLayout = await loadLayout(INDEX_LAYOUT);
   const blogLayout = await loadLayout(BLOG_LAYOUT);
-  const contactLayout = await loadLayout(CONTACT_LAYOUT);
   const defaultPostLayout = await loadLayout(DEFAULT_LAYOUT);
   const draftLayout = await loadLayout(DRAFT_LAYOUT);
-  const likesLayout = await loadLayout(LIKES_LAYOUT);
 
   const homeMarkdown = await loadMarkdown(join(CONTENT_DIR, "index.md"));
-  const blogMarkdown = await loadMarkdown(join(CONTENT_DIR, "blog", "index.md"));
-  const draftMarkdown = await loadMarkdown(join(CONTENT_DIR, "draft", "index.md"));
-  const likesMarkdown = await loadMarkdown(join(CONTENT_DIR, "likes", "index.md"));
+  const blogIndex = await loadSectionIndex("blog");
+  const draftIndex = await loadSectionIndex("draft");
 
   const blogDirPath = join(CONTENT_DIR, "blog");
   let markdownFiles: string[] = [];
@@ -390,7 +449,7 @@ async function build(): Promise<void> {
 
   const blogPartial = fillTemplate(blogBlocks.pageTemplate, {
     "blog-items": listHtml,
-    content: blogMarkdown.contentHtml,
+    content: blogIndex.contentHtml,
     "site-title": SITE_TITLE,
   });
 
@@ -425,7 +484,7 @@ async function build(): Promise<void> {
 
   const draftPartial = fillTemplate(draftBlocks.pageTemplate, {
     "blog-items": draftListHtml,
-    content: draftMarkdown.contentHtml,
+    content: draftIndex.contentHtml,
     "site-title": SITE_TITLE,
   });
 
@@ -438,32 +497,16 @@ async function build(): Promise<void> {
   await ensureDir(draftDir);
   await Bun.write(join(draftDir, "index.html"), draftPage);
 
-  const contactPartial = fillTemplate(contactLayout, {
-    "site-title": SITE_TITLE,
-  });
+  const contentEntries = await readdir(CONTENT_DIR, { withFileTypes: true });
+  const sections = contentEntries
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .filter((name) => name !== "blog" && name !== "draft");
 
-  const contactPage = fillTemplate(baseLayout, {
-    "site-title": SITE_TITLE,
-    page: contactPartial,
-  });
-
-  const contactDir = join(DIST_DIR, "contact");
-  await ensureDir(contactDir);
-  await Bun.write(join(contactDir, "index.html"), contactPage);
-
-  const likesPartial = fillTemplate(likesLayout, {
-    content: likesMarkdown.contentHtml,
-    "site-title": SITE_TITLE,
-  });
-
-  const likesPage = fillTemplate(baseLayout, {
-    "site-title": SITE_TITLE,
-    page: likesPartial,
-  });
-
-  const likesDir = join(DIST_DIR, "likes");
-  await ensureDir(likesDir);
-  await Bun.write(join(likesDir, "index.html"), likesPage);
+  for (const section of sections) {
+    const sectionIndex = await loadSectionIndex(section);
+    await renderSectionIndex(section, sectionIndex, baseLayout, defaultPostLayout);
+  }
 
   const indexBlocks = extractBlocks(indexLayout, [
     {

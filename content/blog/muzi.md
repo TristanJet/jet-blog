@@ -26,7 +26,7 @@ Muzi was my first project with Zig and also my first project lower level in soft
 - [zg](https://codeberg.org/atman/zg) for unicode character display widths
 - [MPD](https://www.musicpd.org/) for playback, managing mp3 library
 
-A massive help early on was a blog post by Leon Plickat titled: [Uncooked Terminal IO](https://leon_plickat.srht.site/writing/uncooked-terminal-io/article.html). It is effectively an extremely well-detailed, well-written tutorial on creating a TUI without a library, in Zig, for POSIX-compliant systems. I am immensely grateful to Plickat for his blog post since I referred to it probably a dozen times during the development of muzi. I would recommend anyone interested in programming a TUI to read through Plickat's post in full. 
+A massive help early on was a blog post by Leon Plickat titled: [Uncooked Terminal IO](https://leon_plickat.srht.site/uncooked-terminal-io.html). It is effectively an extremely well-detailed, well-written tutorial on creating a TUI without a library, in Zig, for POSIX-compliant systems. I am immensely grateful to Plickat for his blog post since I referred to it probably a dozen times during the development of muzi. I would recommend anyone interested in programming a TUI to read through Plickat's post in full. 
 *side note*: despite being shown how, I still haven't implemented Kitty Input Protocol or runtime terminal window resize handling in muzi.
 
 <h3 id="notable">Notable Solutions</h3>
@@ -85,8 +85,7 @@ Lesson learned: **Keep it simple, stupid.**
 
 <h3 id="lessons">Lessons learned</h3>
 
-##### Prior to coding
-understand the **bottom** level APIs you have access to! Nearing the end of muzi's development, I watched the talk [Making Systems Programming Accessible](https://www.youtube.com/watch?v=Qncdi-Fg0-I&t=585s) by Andrew Kelley (Zig creator). If only I had watched it sooner! Andrew's answer to the question: "what is systems programming?", is that it's a way of modelling problems. I'm rewording it a little but here is the point:
+**Understand** the **bottom** level APIs you have access to! Nearing the end of muzi's development, I watched the talk [Making Systems Programming Accessible](https://www.youtube.com/watch?v=Qncdi-Fg0-I&t=585s) by Andrew Kelley (Zig creator). If only I had watched it sooner! Andrew's answer to the question: "what is systems programming?", is that it's a way of modelling problems. I'm rewording it a little but here is the point:
 
 **Model the software as a transformation of the bottom-level APIs you have access to.** 
 
@@ -118,13 +117,11 @@ Most functionality is driven by **two** events: terminal input, and idle respons
 
 Nevertheless, I am happy to have understood this idea sooner rather than later and I am even further convinced that Zig's creator knows exactly what he is doing.
 
-##### Dependencies
-can be liabilities, but importing a good solution is better than implementing a bad solution from scratch. I was surprised to find that asian characters can be rendered having different *widths* in monospaced fonts. I thought this problem would have a trivial solution but I soon found out that it did not.
+**Dependencies** can be liabilities, but importing a good solution is better than implementing a bad solution from scratch. I was surprised to find that asian characters can be rendered having different *widths* in monospaced fonts. I thought this problem would have a trivial solution but I soon found out that it did not.
 
 The unicode spec for character widths is in the form of one long text file. [zg](https://codeberg.org/atman/zg) parses this text file and creates a hashmap of the codepoint and it's width and then embeds it into a compressed file which can be embedded into zig programs as a 2d array...I think. zg is a *perfect* dependency since it contains much more functionality but can be *modularly* compiled and imported. I concluded it would be better to use their great solution than make a bad one myself. Thus, my zero-dependency philosophy was broken.
 
-##### Memory
-isn't really worth optimizing for. Seeking to avoid dynamic heap allocation, I acted with a case of severe premature optimization specifically with the queue buffer. Memory isn't worth sacrificing simplicity for, for user facing apps.
+**Memory** isn't really worth optimizing for. Seeking to avoid dynamic heap allocation, I acted with a case of severe premature optimization specifically with the queue buffer. Memory isn't worth sacrificing simplicity for, for user facing apps.
 
 ### Fin
 I had a lot of fun working on this project and learned a lot. If I didn't succeed in making the best mpd client, I definitely succeeded in making my favourite.

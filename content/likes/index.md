@@ -90,6 +90,10 @@ From Third World To First (The Singapore Story)
 
 [Lindy-Man](https://lindynewsletter.beehiiv.com/)
 
+[Zoso](https://zosoproject.com/)
+
+[Terminally Drifting](https://terminaldrift.substack.com/)
+
 [George Hotz](https://geohot.github.io/blog/)
 
 [Tsoding ](https://www.youtube.com/@Tsoding)
@@ -100,6 +104,8 @@ From Third World To First (The Singapore Story)
 
 [wbe ](https://substack.com/@worstboyfriendever)
 
+[Med Gold](https://substack.com/@medgold)
+
 <h2 id="games">Games</h2>
 Outer Wilds
 
@@ -107,9 +113,9 @@ Persona 3: Reload
 
 Breath Of The Wild
 
-Sekiro
+Sekiro: Shadows Die Twice
 
-Resident Evil 2
+Resident Evil 2 Remake
 
 Animal Well
 

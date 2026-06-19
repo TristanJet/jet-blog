@@ -227,3 +227,143 @@ footer {
 footer hr {
   width: 100%;
 }
+
+/* emscripten stuff */
+
+.emscripten {
+  padding-right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+
+div.emscripten {
+  text-align: center;
+}
+
+div.emscripten_border {
+  border: 1px solid #333;
+  background: #0f0f0f;
+  box-shadow: 0 0 0 1px #111, 0 12px 30px rgba(0, 0, 0, 0.35);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* the canvas *must not* have any border or padding, or mouse coords will be wrong */
+canvas.emscripten {
+  border: 0 none;
+  background-color: #000;
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.emscripten_controls {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 0 12px;
+}
+
+.emscripten_button {
+  appearance: none;
+  border: 1px solid #A855F7;
+  background: #1a1a1a;
+  color: #ddd;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-family: "Verdana", sans-serif;
+  font-size: 0.9em;
+  cursor: pointer;
+}
+
+.emscripten_button:hover {
+  background: #222;
+}
+
+.emscripten_stage {
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 4 / 3;
+  max-height: 85vh;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+
+.emscripten_stage:fullscreen {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  background: #000;
+}
+
+.spinner {
+  height: 26px;
+  width: 26px;
+  margin: 0 12px 0 0;
+  display: inline-block;
+  vertical-align: middle;
+  animation: rotation 0.8s linear infinite;
+  border-left: 3px solid rgba(221, 221, 221, 0.6);
+  border-right: 3px solid rgba(221, 221, 221, 0.6);
+  border-bottom: 3px solid rgba(221, 221, 221, 0.6);
+  border-top: 3px solid #A855F7;
+  border-radius: 50%;
+  background-color: transparent;
+}
+
+@-webkit-keyframes rotation {
+  from { -webkit-transform: rotate(0deg); }
+  to { -webkit-transform: rotate(360deg); }
+}
+
+@-moz-keyframes rotation {
+  from { -moz-transform: rotate(0deg); }
+  to { -moz-transform: rotate(360deg); }
+}
+
+@-o-keyframes rotation {
+  from { -o-transform: rotate(0deg); }
+  to { -o-transform: rotate(360deg); }
+}
+
+@keyframes rotation {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+#status {
+  display: inline-block;
+  vertical-align: middle;
+  margin-top: 0;
+  margin-left: 0;
+  font-weight: 600;
+  color: #ddd;
+  letter-spacing: 0.02em;
+}
+
+#progress {
+  height: 12px;
+  width: min(360px, 80vw);
+  border-radius: 999px;
+  background: #111;
+  border: 1px solid #333;
+  box-shadow: inset 0 0 0 1px #0b0b0b;
+}
+
+#progress::-webkit-progress-bar {
+  background: #111;
+  border-radius: 999px;
+}
+
+#progress::-webkit-progress-value {
+  background: linear-gradient(90deg, #7e3ff2 0%, #A855F7 60%, #c084fc 100%);
+  border-radius: 999px;
+}
+
+#progress::-moz-progress-bar {
+  background: linear-gradient(90deg, #7e3ff2 0%, #A855F7 60%, #c084fc 100%);
+  border-radius: 999px;
+}
